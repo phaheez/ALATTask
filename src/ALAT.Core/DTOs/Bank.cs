@@ -8,7 +8,7 @@ namespace ALAT.Core.DTOs
     {
         public Result result { get; set; }
         public string errorMessage { get; set; }
-        public string[] errorMessages { get; set; }
+        public List<string> errorMessages { get; set; }
         public bool hasError { get; set; }
         public string timeGenerated { get; set; }
     }

@@ -29,7 +29,9 @@ namespace ALAT.Api.Controllers
             try
             {
                 var url = _config.GetSection("GetBankUrl").Value;
-                var bank = await _bankRepository.GetAllBanks(url);
+                var subscriptionKey = _config.GetSection("SubscriptionKey").Value;
+
+                var bank = await _bankRepository.GetAllBanks(url, subscriptionKey);
                 return Ok(bank);
             }
             catch (Exception ex)
