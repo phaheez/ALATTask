@@ -17,6 +17,10 @@ namespace ALAT.Core.Mappings
             CreateMap<Customer, CustomerResponse>()
                 .ForMember(dest => dest.State, opt => opt.MapFrom(src => src.State.Name))
                 .ForMember(dest => dest.Lga, opt => opt.MapFrom(src => src.Lga.Name));
+            CreateMap<State, StateResponse>()
+                .ForMember(dest => dest.StateName, opt => opt.MapFrom(src => src.Name));
+            CreateMap<Lga, LgaResponse>()
+                .ForMember(dest => dest.LgaName, opt => opt.MapFrom(src => src.Name));
         }
     }
 }

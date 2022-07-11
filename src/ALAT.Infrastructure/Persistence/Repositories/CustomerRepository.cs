@@ -24,15 +24,24 @@ namespace ALAT.Infrastructure.Persistence.Repositories
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        public async Task<CustomerResponse> CreateCustomerAsync(CreateCustomerRequest request)
+        public async Task<Response> CreateCustomerAsync(CreateCustomerRequest request)
         {
-            var customer = _mapper.Map<Customer>(request);
-            customer.IsVerified = false;
-            customer.CreatedAt = customer.UpdatedAt = DateUtil.GetCurrentDate();
-            await _context.Customers.AddAsync(customer);
-            var count = await _context.SaveChangesAsync();
-            if(count == 1)
+            try
             {
+                var customer = _mapper.Map<Customer>(request);
+
+                var isEmailExist = await _context.Customers.SingleOrDefaultAsync(e => e.Email == customer.Email);
+                if (isEmailExist != null)
+                {
+                    return new Response { Success = false, Message = "Customer Email already exist. Try with another one" };
+                }
+
+                customer.IsVerified = false;
+                customer.CreatedAt = customer.UpdatedAt = DateUtil.GetCurrentDate();
+
+                await _context.Customers.AddAsync(customer);
+                await _context.SaveChangesAsync();
+
                 var otp = new Otp
                 {
                     CustomerId = customer.Id,
@@ -40,40 +49,72 @@ namespace ALAT.Infrastructure.Persistence.Repositories
                     Expiry = DateUtil.GetCurrentDate().AddMinutes(10)
                 };
                 await _context.Otps.AddAsync(otp);
-            }
+                await _context.SaveChangesAsync();
 
-            return _mapper.Map<CustomerResponse>(customer);
+                return new Response { Success = true, Message = "Onboarding was successful. Kindly enter '112233' to verify your phone number" };
+            }
+            catch (Exception ex)
+            {
+                return new Response { Success = false, Message = ex.Message };
+            }
         }
 
         public async Task<List<CustomerResponse>> GetCustomersAsync()
         {
             var customers = await _context.Customers
                 .Include(p => p.State)
+                .Include(p => p.Lga)
                 .AsNoTracking()
                 .ToListAsync();
             var list = _mapper.Map<List<CustomerResponse>>(customers);
             return list;
         }
 
-        public async Task<bool> VerifyCustomerPhoneAsync(int customerId, OtpRequest request)
+        public async Task<Response> VerifyCustomerPhoneAsync(OtpRequest request)
         {
-            var otp = await _context.Otps.SingleOrDefaultAsync(p => p.CustomerId == customerId);
-            if(otp != null)
+            try
             {
-                if(otp.Passcode == request.OtpCode && otp.Expiry < DateTime.Now)
-                {
-                    var customer = await _context.Customers.FindAsync(customerId);
-                    customer.IsVerified = true;
-                    _context.Customers.Update(customer);
-                    await _context.SaveChangesAsync();
+                var otp = request.OtpCode;
+                var email = request.Email;
+                var phoneNo = request.PhoneNumber;
 
-                    return true;
+                var customer = await _context.Customers.FirstOrDefaultAsync(e => e.Email == email && e.PhoneNumber == phoneNo);
+                if (customer != null)
+                {
+                    if (customer.IsVerified == false)
+                    {
+                        var custOtp = await _context.Otps.FirstOrDefaultAsync(p => p.Passcode == otp && p.CustomerId == customer.Id);
+                        if (custOtp != null)
+                        {
+                            customer.IsVerified = true;
+                            _context.Customers.Update(customer);
+                            await _context.SaveChangesAsync();
+
+                            return new Response { Success = true, Message = "Customer phoneNumber successfully verified" };
+                            //if (custOtp.Expiry > DateTime.Now)
+                            //{
+                            //    customer.IsVerified = true;
+                            //    _context.Customers.Update(customer);
+                            //    await _context.SaveChangesAsync();
+
+                            //    return new Response { Success = true, Message = "Customer phoneNumber successfully verified" };
+                            //}
+
+                            //return new Response { Success = false, Message = "OTP has expired" };
+                        }
+
+                        return new Response { Success = false, Message = "Invalid OTP" };
+                    }
+
+                    return new Response { Success = false, Message = "Customer has already been verified" };
                 }
 
-                return false;
+                return new Response { Success = false, Message = "Invalid Customer" };
             }
-
-            throw new NotFoundException();
+            catch (Exception ex)
+            {
+                return new Response { Success = false, Message = ex.Message };
+            }
         }
     }
 }

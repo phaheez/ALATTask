@@ -9,7 +9,7 @@ namespace ALAT.Core.Interfaces
     public interface ICustomerRepository
     {
         Task<List<CustomerResponse>> GetCustomersAsync();
-        Task<CustomerResponse> CreateCustomerAsync(CreateCustomerRequest request);
-        Task<bool> VerifyCustomerPhoneAsync(int customerId, OtpRequest request);
+        Task<Response> CreateCustomerAsync(CreateCustomerRequest request);
+        Task<Response> VerifyCustomerPhoneAsync(OtpRequest request);
     }
 }

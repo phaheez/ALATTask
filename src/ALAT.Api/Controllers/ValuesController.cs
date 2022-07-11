@@ -20,13 +20,13 @@ namespace ALAT.Api.Controllers
             _valuesRepository = valuesRepository ?? throw new ArgumentNullException(nameof(valuesRepository));
         }
 
-        [HttpGet("state/getAll")]
-        public async Task<ActionResult<List<CustomerResponse>>> GetStates()
+        [HttpGet("state/get-all")]
+        public async Task<IActionResult> GetStates()
         {
             try
             {
                 var states = await _valuesRepository.GetStatesAsync();
-                return Ok(states);
+                return Ok(new { success = true, data = states });
             }
             catch (Exception ex)
             {
@@ -34,13 +34,13 @@ namespace ALAT.Api.Controllers
             }
         }
 
-        [HttpGet("lga/getAll")]
-        public async Task<ActionResult<List<CustomerResponse>>> GetLgas()
+        [HttpGet("lga/get-all")]
+        public async Task<IActionResult> GetLgas()
         {
             try
             {
                 var lgas = await _valuesRepository.GetLgasAsync();
-                return Ok(lgas);
+                return Ok(new { success = true, data = lgas });
             }
             catch (Exception ex)
             {
@@ -49,12 +49,12 @@ namespace ALAT.Api.Controllers
         }
 
         [HttpGet("lga/getByStateId/{id}")]
-        public async Task<ActionResult<List<CustomerResponse>>> GetLgaByStateId(int id)
+        public async Task<IActionResult> GetLgaByStateId(int id)
         {
             try
             {
                 var lga = await _valuesRepository.GetLgasByStateIdAsync(id);
-                return Ok(lga);
+                return Ok(new { success = true, data = lga });
             }
             catch (Exception ex)
             {

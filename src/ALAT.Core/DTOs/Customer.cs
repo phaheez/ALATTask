@@ -27,6 +27,16 @@ namespace ALAT.Core.DTOs
     {
         [Required]
         public string OtpCode { get; set; }
+        [Required]
+        public string Email { get; set; }
+        [Required]
+        public string PhoneNumber { get; set; }
+    }
+
+    public class Response
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; }
     }
 
     public class CustomerResponse

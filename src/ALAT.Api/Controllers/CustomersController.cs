@@ -22,12 +22,12 @@ namespace ALAT.Api.Controllers
         }
 
         [HttpGet("get-all")]
-        public async Task<ActionResult<List<CustomerResponse>>> GetCustomers()
+        public async Task<IActionResult> GetCustomers()
         {
             try
             {
                 var customers = await _customerRepository.GetCustomersAsync();
-                return Ok(customers);
+                return Ok(new { success = true, data = customers });
             }
             catch (Exception ex)
             {
@@ -36,16 +36,17 @@ namespace ALAT.Api.Controllers
         }
 
         [HttpPost("onboard")]
-        public async Task<ActionResult> Create(CreateCustomerRequest request)
+        public async Task<IActionResult> Create(CreateCustomerRequest request)
         {
             try
             {
-                var customer = await _customerRepository.CreateCustomerAsync(request);
-                if (customer != null)
+                var res = await _customerRepository.CreateCustomerAsync(request);
+                if (res.Success)
                 {
-                    return Ok(new { success = true, message = "Onboarding was successful. Kindly enter '112233' to verify your phone number. " });
+                    return Ok(new { success = true, message = res.Message });
                 }
-                return BadRequest("Something went wrong");
+                
+                return StatusCode(StatusCodes.Status400BadRequest, new { error = res.Message });
             }
             catch (Exception ex)
             {
@@ -54,15 +55,18 @@ namespace ALAT.Api.Controllers
         }
 
         [HttpPost("verify-phone")]
-        public async Task<ActionResult> Verify(int customerId, OtpRequest request)
+        public async Task<IActionResult> Verify(OtpRequest request)
         {
             try
             {
-                var res = await _customerRepository.VerifyCustomerPhoneAsync(customerId, request);
-                var success = res;
-                var message = res ? "Verification Successful" : "Verification Failed";
+                var res = await _customerRepository.VerifyCustomerPhoneAsync(request);
 
-                return Ok(new { success, message });
+                if (res.Success)
+                {
+                    return Ok(new { success = true, message = res.Message });
+                }
+
+                return StatusCode(StatusCodes.Status400BadRequest, new { error = res.Message });
             }
             catch (Exception ex)
             {

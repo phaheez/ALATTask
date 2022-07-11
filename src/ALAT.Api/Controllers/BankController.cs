@@ -24,15 +24,15 @@ namespace ALAT.Api.Controllers
         }
 
         [HttpGet("get-all")]
-        public async Task<ActionResult<Bank>> GetCustomers()
+        public async Task<IActionResult> GetCustomers()
         {
             try
             {
                 var url = _config.GetSection("GetBankUrl").Value;
                 var subscriptionKey = _config.GetSection("SubscriptionKey").Value;
 
-                var bank = await _bankRepository.GetAllBanks(url, subscriptionKey);
-                return Ok(bank);
+                var response = await _bankRepository.GetAllBanks(url, subscriptionKey);
+                return Ok(response);
             }
             catch (Exception ex)
             {

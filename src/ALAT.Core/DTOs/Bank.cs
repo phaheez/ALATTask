@@ -18,4 +18,11 @@ namespace ALAT.Core.DTOs
         public string bankName { get; set; }
         public string bankCode { get; set; }
     }
+
+    public class BankResponse
+    {
+        public int status { get; set; }
+        public string message { get; set; }
+        public Bank data { get; set; }
+    }
 }

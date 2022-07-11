@@ -8,6 +8,6 @@ namespace ALAT.Core.Interfaces
 {
     public interface IBankRepository
     {
-        Task<Bank> GetAllBanks(string url, string subscriptionKey);
+        Task<BankResponse> GetAllBanks(string url, string subscriptionKey);
     }
 }
