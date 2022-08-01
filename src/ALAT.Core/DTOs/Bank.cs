@@ -6,11 +6,11 @@ namespace ALAT.Core.DTOs
 {
     public class Bank
     {
-        public Result result { get; set; }
-        public string errorMessage { get; set; }
-        public List<string> errorMessages { get; set; }
+        public List<Result> result { get; set; }
+        public object errorMessage { get; set; }
+        public object errorMessages { get; set; }
         public bool hasError { get; set; }
-        public string timeGenerated { get; set; }
+        public DateTime timeGenerated { get; set; }
     }
 
     public class Result
